@@ -44,7 +44,7 @@ if (isset($_POST['email'])) {
     $checkEmailQuery = "SELECT * FROM tbl_231_users WHERE email = '$email' AND id <> '$dogId'";
     $checkEmailResult = $conn->query($checkEmailQuery);
 
-    if ($checkEmailResult->num_rows > 0) {
+    if ($checkEmailResult->num_rows > 0 && $email !== $_SESSION['email']) {
         $emailExists = true;
     }
 }
@@ -53,8 +53,8 @@ if (isset($_POST['email']) && !$emailExists) {
     $email = $_POST['email'];
     $username = $_POST['username'];
     $password = $_POST['password'];
-
-    $updateQuery = "UPDATE tbl_231_users SET email = '$email', username = '$username', password = '$password' WHERE id = '$dogId'";
+    $userid = $_SESSION['id'];
+    $updateQuery = "UPDATE tbl_231_users SET email = '$email', username = '$username', password = '$password' WHERE id = '$userid'";
     $updateResult = $conn->query($updateQuery);
 
     if ($updateResult) {
@@ -68,14 +68,17 @@ if ($_SESSION['role'] === 'admin') {
     $currentUserId = $_SESSION['id'];
     $sql = "SELECT * FROM tbl_231_users WHERE id <> '$currentUserId'";
     $result = $conn->query($sql);
-    $users = $result->fetch_all(MYSQLI_ASSOC);
+    $users = array();
+
+    while ($row = $result->fetch_assoc()) {
+        $users[] = $row;
+    }
 
     if (isset($_POST['deleteAccount']) && isset($_POST['accountId'])) {
         $accountId = $_POST['accountId'];
 
-        $deleteQuery = "DELETE FROM tbl_231_users WHERE id = '$accountId'";
-        $deleteResult = $conn->query($deleteQuery);
-
+        $deleteQuery = "DELETE FROM tbl_231_users WHERE id = '$accountId'; SET SQL_SAFE_UPDATES = 0; DELETE FROM tbl_231_dogs WHERE user_id = '$accountId';";
+        $deleteResult = $conn->multi_query($deleteQuery);
         if ($deleteResult) {
             $successMessage = 'Account deleted successfully.';
         } else {
