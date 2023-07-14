@@ -90,26 +90,33 @@
 
 						if ($isAdmin) {
 							echo '<form method="POST" action="">
-                    <input type="hidden" name="gardenId" value="' . $gardenId . '">
-                    <label for="gardenName">Garden Name:</label>
-                    <input type="text" name="gardenName" value="' . $gardenName . '"><br/>
-                    <label for="gardenDescription">Description:</label>
-                    <textarea name="gardenDescription">' . $gardenDescription . '</textarea>
-                    <button type="submit" name="save" class="btn btn-primary">Save</button>
-                </form>';
-
+								<input type="hidden" name="gardenId" value="' . $gardenId . '">
+								<label for="gardenName">Garden Name:</label>
+								<input type="text" name="gardenName" value="' . $gardenName . '"><br/>
+								<label for="gardenDescription">Description:</label>
+								<textarea name="gardenDescription">' . $gardenDescription . '</textarea>
+								<button type="submit" name="save" class="btn btn-primary">Save</button>
+							</form>';
+						
 							if (isset($_POST['save'])) {
 								$newGardenName = $_POST['gardenName'];
 								$newGardenDescription = $_POST['gardenDescription'];
-
-								$updateSql = "UPDATE tbl_231_gardens SET name = '$newGardenName', description = '$newGardenDescription' WHERE id = '$gardenId'";
-								if ($conn->query($updateSql) === TRUE) {
+						
+								$updateSql = "UPDATE tbl_231_gardens SET name = ?, description = ? WHERE id = ?";
+						
+								$stmt = $conn->prepare($updateSql);
+						
+								$stmt->bind_param("ssi", $newGardenName, $newGardenDescription, $gardenId);
+						
+								if ($stmt->execute()) {
 									echo "Garden information saved successfully.";
 									$gardenName = $newGardenName;
 									$gardenDescription = $newGardenDescription;
 								} else {
-									echo "Error updating garden information: " . $conn->error;
+									echo "Error updating garden information: " . $stmt->error;
 								}
+						
+								$stmt->close();
 							}
 						} else {
 							echo "<p>Garden Name: $gardenName</p>";

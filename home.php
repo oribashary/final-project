@@ -171,22 +171,8 @@
             </div>
         </div>
     </div>
-    <script>
-        $(document).ready(function() {
-            $('#hugButton').click(function() {
-                $.ajax({
-                    type: 'POST',
-                    url: 'update_hugs.php',
-                    data: {
-                        dogId: <?php echo $dogId; ?>
-                    },
-                    success: function(response) {
-                        $('#hugCounter').text(response);
-                    }
-                });
-            });
-        });
-    </script>
+    <script> var dogId = <?php echo json_encode($dogId); ?>; </script>
+	<script src="js/home.js"></script>
 </body>
 
 </html>
